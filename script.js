@@ -3,6 +3,7 @@ const ratePerKg = 55;
 const fixedTransferFee = 45;
 const transferThresholdKg = 33;
 const transferRubPerKg = 15;
+const yuanToRubRate = 10.7;
 
 const body = document.body;
 const burgerButton = document.querySelector(".burger-button");
@@ -14,6 +15,7 @@ const widthInput = document.querySelector("#width");
 const estimateNode = document.querySelector("#estimate");
 const tableWeightNode = document.querySelector("#table-weight");
 const transferFeeNode = document.querySelector("#transfer-fee");
+const rubEstimateNode = document.querySelector("#rub-estimate");
 const estimateLink = document.querySelector("#estimate-link");
 const calcForm = document.querySelector("#cargo-calc");
 const unknownSize = document.querySelector("#unknown-size");
@@ -26,11 +28,11 @@ function formatNumber(value) {
 }
 
 function formatYuan(value) {
-  return `${formatNumber(value)}ю`;
+  return `${formatNumber(value)}¥`;
 }
 
 function formatRub(value) {
-  return `${formatNumber(value)}р`;
+  return `${formatNumber(value)} ₽`;
 }
 
 function parseDecimal(value) {
@@ -42,19 +44,26 @@ function updateEstimate() {
   const weight = parseDecimal(weightInput.value);
   const deliveryFee = weight > 0 ? weight * ratePerKg : 0;
   const transferFeeRub = weight > transferThresholdKg ? weight * transferRubPerKg : 0;
+  const transferFeeYuan = weight > transferThresholdKg ? 0 : fixedTransferFee;
   const transferFeeText = weight > transferThresholdKg ? `${formatRub(transferFeeRub)}` : formatYuan(fixedTransferFee);
   const totalText =
     weight > transferThresholdKg
       ? `${formatYuan(deliveryFee)} + ${formatRub(transferFeeRub)}`
       : formatYuan(deliveryFee + fixedTransferFee);
+  const rubTotal = Math.round((deliveryFee + transferFeeYuan) * yuanToRubRate + transferFeeRub);
+  const rubEstimateText =
+    weight > transferThresholdKg
+      ? `≈ ${formatRub(rubTotal)} всего (${formatYuan(deliveryFee)} × ${yuanToRubRate.toString().replace(".", ",")} ₽ + ${formatRub(transferFeeRub)})`
+      : `≈ ${formatRub(rubTotal)} всего (${formatYuan(deliveryFee + fixedTransferFee)} × ${yuanToRubRate.toString().replace(".", ",")} ₽)`;
 
   estimateNode.textContent = weight > 0 ? totalText : "Введите вес";
   tableWeightNode.textContent = weight > 0 ? `${weightInput.value.replace(".", ",")} кг` : "Не указан";
   transferFeeNode.textContent = weight > 0 ? transferFeeText : "-";
+  rubEstimateNode.textContent = weight > 0 ? rubEstimateText : "Введите вес для пересчета в рублях";
 
   const dimensions = dimensionInputs.map((input) => input.value.trim() || "-").join(" × ");
   const text = encodeURIComponent(
-    `Здравствуйте! Хочу уточнить доставку Cargo 1717 через Благовещенск. Вес: ${weightInput.value || "-"} кг. Габариты: ${dimensions} см. Предварительный расчет до ТК: ${weight > 0 ? totalText : "-"}`
+    `Здравствуйте! Хочу уточнить доставку Cargo 1717 через Благовещенск. Вес: ${weightInput.value || "-"} кг. Габариты: ${dimensions} см. Предварительный расчет до ТК: ${weight > 0 ? `${totalText}, ${rubEstimateText}` : "-"}`
   );
   estimateLink.href = `${telegramUrl}?text=${text}`;
 
