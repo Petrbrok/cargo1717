@@ -1,5 +1,8 @@
 const telegramUrl = "https://t.me/onix1717";
-const ratePerKg = 3.5;
+const ratePerKg = 55;
+const fixedTransferFee = 45;
+const transferThresholdKg = 33;
+const transferRubPerKg = 15;
 
 const body = document.body;
 const burgerButton = document.querySelector(".burger-button");
@@ -10,17 +13,24 @@ const heightInput = document.querySelector("#height");
 const widthInput = document.querySelector("#width");
 const estimateNode = document.querySelector("#estimate");
 const tableWeightNode = document.querySelector("#table-weight");
+const transferFeeNode = document.querySelector("#transfer-fee");
 const estimateLink = document.querySelector("#estimate-link");
 const calcForm = document.querySelector("#cargo-calc");
 const unknownSize = document.querySelector("#unknown-size");
 const dimensionInputs = [lengthInput, heightInput, widthInput];
 
-function formatUsd(value) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
+function formatNumber(value) {
+  return new Intl.NumberFormat("ru-RU", {
+    maximumFractionDigits: 0,
   }).format(value);
+}
+
+function formatYuan(value) {
+  return `${formatNumber(value)}ю`;
+}
+
+function formatRub(value) {
+  return `${formatNumber(value)}р`;
 }
 
 function parseDecimal(value) {
@@ -30,13 +40,21 @@ function parseDecimal(value) {
 
 function updateEstimate() {
   const weight = parseDecimal(weightInput.value);
-  const estimate = weight > 0 ? weight * ratePerKg : 0;
-  estimateNode.textContent = estimate > 0 ? formatUsd(estimate) : "Введите вес";
+  const deliveryFee = weight > 0 ? weight * ratePerKg : 0;
+  const transferFeeRub = weight > transferThresholdKg ? weight * transferRubPerKg : 0;
+  const transferFeeText = weight > transferThresholdKg ? `${formatRub(transferFeeRub)}` : formatYuan(fixedTransferFee);
+  const totalText =
+    weight > transferThresholdKg
+      ? `${formatYuan(deliveryFee)} + ${formatRub(transferFeeRub)}`
+      : formatYuan(deliveryFee + fixedTransferFee);
+
+  estimateNode.textContent = weight > 0 ? totalText : "Введите вес";
   tableWeightNode.textContent = weight > 0 ? `${weightInput.value.replace(".", ",")} кг` : "Не указан";
+  transferFeeNode.textContent = weight > 0 ? transferFeeText : "-";
 
   const dimensions = dimensionInputs.map((input) => input.value.trim() || "-").join(" × ");
   const text = encodeURIComponent(
-    `Здравствуйте! Хочу расчет Cargo 1717. Вес: ${weightInput.value || "-"} кг. Габариты: ${dimensions} см.`
+    `Здравствуйте! Хочу уточнить доставку Cargo 1717 через Благовещенск. Вес: ${weightInput.value || "-"} кг. Габариты: ${dimensions} см. Предварительный расчет до ТК: ${weight > 0 ? totalText : "-"}`
   );
   estimateLink.href = `${telegramUrl}?text=${text}`;
 
