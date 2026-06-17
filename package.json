@@ -1,0 +1,8 @@
+{
+  "name": "cargo1717",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}
