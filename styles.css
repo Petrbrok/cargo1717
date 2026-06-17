@@ -746,6 +746,11 @@ select {
   margin-top: 0;
 }
 
+.timeline-item p {
+  font-size: 15px;
+  line-height: 1.48;
+}
+
 .calculator-section {
   display: grid;
   grid-template-columns: 0.78fr 1.22fr;
