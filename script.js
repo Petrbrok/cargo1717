@@ -28,7 +28,7 @@ function formatNumber(value) {
 }
 
 function formatYuan(value) {
-  return `${formatNumber(value)}¥`;
+  return `${formatNumber(value)} ¥`;
 }
 
 function formatRub(value) {
@@ -45,7 +45,7 @@ function updateEstimate() {
   const deliveryFee = weight > 0 ? weight * ratePerKg : 0;
   const transferFeeRub = weight > transferThresholdKg ? weight * transferRubPerKg : 0;
   const transferFeeYuan = weight > transferThresholdKg ? 0 : fixedTransferFee;
-  const transferFeeText = weight > transferThresholdKg ? `${formatRub(transferFeeRub)}` : formatYuan(fixedTransferFee);
+  const transferFeeText = weight > transferThresholdKg ? formatRub(transferFeeRub) : formatYuan(fixedTransferFee);
   const totalText =
     weight > transferThresholdKg
       ? `${formatYuan(deliveryFee)} + ${formatRub(transferFeeRub)}`
