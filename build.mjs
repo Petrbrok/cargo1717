@@ -19,6 +19,13 @@ for (const file of ["robots.txt", "sitemap.xml"]) {
   }
 }
 
+for (const file of ["yandex_bbc78a852b9265f8.html"]) {
+  const source = new URL(`./${file}`, rootDir);
+  if (existsSync(fileURLToPath(source))) {
+    await copyFile(source, new URL(`./${file}`, distDir));
+  }
+}
+
 await cp(new URL("./public/", rootDir), new URL("./public/", distDir), {
   recursive: true,
 });
